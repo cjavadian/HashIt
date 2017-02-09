@@ -3,6 +3,8 @@
 
 #include <stdio.h>
 #include <ctype.h>
+#include <string.h>
+#include <stdlib.h>
 
 #define TABLE_SIZE 101
 
@@ -78,23 +80,24 @@ void main() {
 	while (lines > 0) {
 		scanf("%d", &ops);
 		while (ops > 0) {
-			char input;
-			scanf("%c", &input);
-			char *key = slice_str(input, 4, sizeof(input));
-			if (input[1] == 'A') {
-				insert_key(*hash, *key);
+			char * input = (char *)malloc(sizeof(char)*19);
+			scanf("%s", input);
+			char *key;
+			char check = input[0];
+			strncpy(key, input+4, 15);
+			if (check == 'A') {
+				insert_key(hash, key);
 				keys++;
 			} else {
-				delete_key(*hash, *key);
+				delete_key(hash, key);
 				keys--;
 			}
 			ops--;
 		}
-		display_keys(*hash);
-		clear_table(*hash);
+		display_keys(hash);
+		clear_table(hash);
 		lines--;
 	}
-	return;
 }
 
 
