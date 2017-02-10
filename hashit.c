@@ -13,10 +13,12 @@ typedef struct {
     int num_keys;
 } hash_set;
 
+char * EMPTY = NULL;
+
 void clear_table(hash_set *set) {
-	for (int i = 0; i < 101; i++) {
-		if (&set[i] != NULL || &set[i] == 'empty') {
-			&set[i] = NULL;
+	for (int i = 0; i < TABLE_SIZE; i++) {
+		if (set->keys[i] != NULL && set->keys[i] != EMPTY) {
+			set->keys[i] = NULL;
 		}
 	}
 	return;
@@ -25,79 +27,94 @@ void clear_table(hash_set *set) {
 int hash(char *key) {
 	int ch = 0;
 	int hash = 0;
-	for (int i = 0; i < sizeof(key); i++) {
-		ch += toascii(key[i])*(i+1);
+	int check = 0;
+	while(key[check]) {
+		ch += (key[check])*(check+1);
+		check++;
 	}
 	ch *= 19;
-	hash = (ch % 101);
+	hash = (ch % TABLE_SIZE);
 	return hash;
 }
 
 int insert_key(hash_set *set, char *key) {
 	int hashk = hash(key);
 	int count = 1;
-	while (set[hash] != NULL || set[hash] != 'empty') {
+	while (set->keys[hashk] != NULL) {
+		if (strcmp(key, set->keys[hashk]) == 0) {
+			return -1;
+		}
 		hashk += (count*count) + (count*23);
 		count++;
 		if (count == 19) {
 			return -1;
 		}
 	}
-	set[hashk] = key;
+	set->keys[hashk] = key;
 	return 0;
 }
 
 int delete_key(hash_set *set, char *key) {
 	int hashk = hash(key);
+	int k = hashk;
 	int count = 1;
-	while (set[hash] != key) {
-		hashk += (count*count) + (count*23);
-		count++;
-		if (count == 19) {
+	while (count != 20) {
+		if (set->keys[k] == NULL) {
 			return -1;
 		}
+		if (strcmp(key, set->keys[k]) == 0) {
+			free(set->keys[k]);
+			char * EMPTY = NULL;
+			set->keys[k] = EMPTY;
+			return 0;
+		}
+		k = (hashk + (count*count) + (count*23))%TABLE_SIZE;
+		count++;
 	}
-	set[hashk] = 'empty';
 	return 0;
 }
 
 void display_keys(hash_set *set) {
-	for (int i = 0; i < 101; i++) {
-		if (set[i] != NULL || set[i] != 'empty') {
+	for (int i = 0; i < TABLE_SIZE; i++) {
+		if (set->keys[i] != NULL) {
 			printf("%i:",i);
-			printf("%i\n",set[i]);
+			printf("%s\n",set->keys[i]);
 		}
 	}
 	return;
 }
 
-void main() {
+int main() {
 	int lines;
 	int ops;
-	int keys;
-	hash_set *hash;
+	hash_set * hash = (hash_set *)malloc(sizeof(hash_set));
+	for (int i = 0; i > TABLE_SIZE; i++) {
+		hash->keys[i] = NULL;
+	}
 	scanf("%d", &lines);
 	while (lines > 0) {
 		scanf("%d", &ops);
 		while (ops > 0) {
 			char * input = (char *)malloc(sizeof(char)*19);
 			scanf("%s", input);
-			char *key;
+			char *key = (char *)malloc(sizeof(char)*15);
 			char check = input[0];
 			strncpy(key, input+4, 15);
 			if (check == 'A') {
 				insert_key(hash, key);
-				keys++;
+				hash->num_keys++;
 			} else {
 				delete_key(hash, key);
-				keys--;
+				hash->num_keys--;
 			}
 			ops--;
 		}
+		printf("%i\n", hash->num_keys);
 		display_keys(hash);
 		clear_table(hash);
 		lines--;
 	}
+	return 0;
 }
 
 
