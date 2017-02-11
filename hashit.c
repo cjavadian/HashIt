@@ -34,39 +34,68 @@ int hash(char *key) {
 	}
 	ch *= 19;
 	hash = (ch % TABLE_SIZE);
+//	printf("%i\n", hash);
 	return hash;
 }
 
 int insert_key(hash_set *set, char *key) {
 	int hashk = hash(key);
+	int k = hashk;
 	int count = 1;
-	while (set->keys[hashk] != NULL) {
-		if (strcmp(key, set->keys[hashk]) == 0) {
+	while (count != 21) {
+		if(set->keys[k] == NULL || set->keys[k] == EMPTY) {
+			set->keys[k] = key;
+			return 0;
+		}
+//		if(set->keys[k] == EMPTY) {
+//			printf("%s\n", "here");
+//			int tempc = (21 - count);
+//			int temp = k;
+//			while (tempc != 0) {
+//				if(strcmp(key, set->keys[temp]) == 0) {
+//					return -1;
+//				}
+//				temp = (k + (tempc*tempc) + (tempc*23))%TABLE_SIZE;
+//				tempc--;
+//			}
+//			set->keys[k] = key;
+//		}
+		if (strcmp(key, set->keys[k]) == 0) {
 			return -1;
 		}
-		hashk += (count*count) + (count*23);
+		k = (hashk + (count*count) + (count*23))%TABLE_SIZE;
 		count++;
-		if (count == 19) {
-			return -1;
-		}
 	}
-	set->keys[hashk] = key;
-	return 0;
+	return -1;
 }
+//	while (set->keys[hashk] != NULL) {
+//		if (strcmp(key, set->keys[hashk]) == 0) {
+//			return -1;
+//		}
+//		hashk += ((count*count) + (count*23))%TABLE_SIZE;
+//		count++;
+//		if (count == 19) {
+//			return -1;
+//		}
+//	}
+//	set->keys[hashk] = key;
+//	return 0;
+//}
 
 int delete_key(hash_set *set, char *key) {
 	int hashk = hash(key);
 	int k = hashk;
 	int count = 1;
-	while (count != 20) {
+	while (count != 21) {
 		if (set->keys[k] == NULL) {
 			return -1;
 		}
-		if (strcmp(key, set->keys[k]) == 0) {
-			free(set->keys[k]);
-			char * EMPTY = NULL;
-			set->keys[k] = EMPTY;
-			return 0;
+		if (set->keys[k] != EMPTY) {
+			if (strcmp(key, set->keys[k]) == 0) {
+				free(set->keys[k]);
+				set->keys[k] = EMPTY;
+				return 0;
+			}
 		}
 		k = (hashk + (count*count) + (count*23))%TABLE_SIZE;
 		count++;
@@ -101,11 +130,13 @@ int main() {
 			char check = input[0];
 			strncpy(key, input+4, 15);
 			if (check == 'A') {
-				insert_key(hash, key);
-				hash->num_keys++;
+				if (insert_key(hash, key) == 0) {
+					hash->num_keys++;
+				}
 			} else {
-				delete_key(hash, key);
-				hash->num_keys--;
+				if (delete_key(hash, key) != -1) {
+					hash->num_keys--;
+				}
 			}
 			ops--;
 		}
