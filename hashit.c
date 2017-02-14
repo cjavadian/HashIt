@@ -15,11 +15,11 @@ typedef struct {
 
 char * EMPTY = "empty";
 
+// clears the hash table
 void clear_table(hash_set *set) {
 	int count = 0;
 	while (count < TABLE_SIZE) {
 		if (set->keys[count] != NULL) {
-			//free(set->keys[count]);
 			set->keys[count] = NULL;
 		}
 		count++;
@@ -27,6 +27,7 @@ void clear_table(hash_set *set) {
 	return;
 }
 
+// hash function - returns the hash of the key
 int hash(char *key) {
 	int sum = 0;
 	int check = 0;
@@ -40,6 +41,7 @@ int hash(char *key) {
 	return (sum % TABLE_SIZE);
 }
 
+// Checks to see if the key currently exists in the hash_set
 int in_hash(hash_set *set, char *key) {
 	int hashk = hash(key);
 	int k = 0;
@@ -57,6 +59,10 @@ int in_hash(hash_set *set, char *key) {
 	return 0;
 }
 
+// inserts a new key into the table
+// ignores insertion of the key that already exists
+// if it cannot be added to the hash_set after 20 tries,
+// it is assumed that it cannot be added to the hash_set
 int insert_key(hash_set *set, char *key) {
 	int hashk = hash(key);
 	int k = hashk;
@@ -77,6 +83,10 @@ int insert_key(hash_set *set, char *key) {
 	return -1;
 }
 
+
+// deletes a key from the table without moving the others
+// by marking the position in table as empty
+// ignore non-existing keys in the table
 int delete_key(hash_set *set, char *key) {
 	int hashk = hash(key);
 	int k = hashk;
@@ -98,6 +108,7 @@ int delete_key(hash_set *set, char *key) {
 	return -1;
 }
 
+// displays the keys in the hash_set
 void display_keys(hash_set *set) {
 	int i = 0;
 	while (i < TABLE_SIZE) {
@@ -115,6 +126,7 @@ int main() {
 	int ops;
 	hash_set * hash = (hash_set *)malloc(sizeof(hash_set));
 	int count = 0;
+  // creates an empty hash table of size TABLE_SIZE
 	while (count < TABLE_SIZE) {
 		hash->keys[count] = NULL;
 		count++;
@@ -129,17 +141,20 @@ int main() {
 			key = (char *)malloc(sizeof(char)*15);
 			char check = input[0];
 			strncpy(key, input+4, 15);
+      // if instruction is "ADD", call insert_key
 			if (check == 'A') {
 				if (insert_key(hash, key) == 0) {
 					hash->num_keys++;
 				}
 			} else {
+        // if instruction is "DELETE", call delete_key
 				if (delete_key(hash, key) != -1) {
 					hash->num_keys--;
 				}
 			}
 			ops--;
 		}
+    // displays keys, clears table, and frees allocated memory
 		printf("%i\n", hash->num_keys);
 		display_keys(hash);
 		clear_table(hash);
@@ -147,10 +162,8 @@ int main() {
 		hash->num_keys = 0;
 		lines--;
 	}
+  // frees additional allocated memory
 	free(hash);
 	free(input);
 	return 0;
 }
-
-
-
